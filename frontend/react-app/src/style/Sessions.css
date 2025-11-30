@@ -1,0 +1,144 @@
+.sessions-container {
+  width: 800px;
+  max-width: 90%;
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 18px;
+  margin: 40px auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  animation: fadeIn 0.5s ease;
+}
+
+.sessions-container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #38bdf8;
+}
+
+.session-card {
+  background: #0f172a;
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  border-left: 6px solid #38bdf8;
+}
+
+.session-card h3 {
+  margin-bottom: 8px;
+  color: #38bdf8;
+}
+
+.session-card p {
+  color: #cbd5e1;
+  margin: 4px 0;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+  margin-top: 10px;
+  background: #ef4444;
+  padding: 8px 15px;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+/* LOGOUT ALL */
+.logout-all-btn {
+  background: #ef4444;
+  color: white;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.logout-all-btn:hover {
+  background: #dc2626;
+}
+
+/* CURRENT DEVICE TAG */
+.current-device {
+  display: inline-block;
+  margin-top: 8px;
+  background: #38bdf8;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.back-btn:hover {
+  background: #2563eb;
+}
+
+/* Loading */
+.loading {
+  color: #38bdf8;
+  font-size: 24px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* RESPONSIVE MEDIA QUERIES */
+@media (max-width:350px)
+{
+  .sessions-container {
+    width: 50%;
+    /* padding: 10px; */
+    /* padding: 20px; */
+  }
+}
+
+
+@media (max-width: 480px) {
+  .sessions-container {
+    width: 70%;
+    padding: 15px;
+    /* padding: 20px; */
+  }
+  .sessions-container h1{
+    font-size: large;
+  }
+  .session-card {
+    font-size: 14px;
+  }
+  .logout-all-btn {
+    font-size: x-small;
+  }
+  .logout-btn{
+    font-size: x-small;
+  }
+  .back-btn{
+    font-size: x-small;
+  }
+}
+
+@media (max-width: 768px) {
+  .sessions-container {
+    width: 80%;
+  }
+}
+
+@media (min-width: 769px) {
+  .sessions-container {
+    width: 900px;
+  }
+}

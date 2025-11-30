@@ -1,0 +1,17 @@
+/* DARK MODE GLOBAL STYLES */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #0f172a; /* dark navy */
+  min-height: 100vh;
+  color: #e2e8f0; /* soft text */
+}
+
+h1, h2, h3, p, label {
+  color: #e2e8f0;
+}
