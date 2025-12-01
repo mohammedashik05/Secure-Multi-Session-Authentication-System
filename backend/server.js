@@ -19,9 +19,10 @@ app.use(
     credentials: true,
   })
 );
-app.get("/",()=>{
-  console.log("backend is working ")
-})
+app.get("/", (req, res) => {
+  res.send("Backend is working 🚀");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions",sessionRoutes);
 
