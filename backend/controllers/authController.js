@@ -13,8 +13,8 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const sendAuthCookies = (res, token, sid) => {
   res.cookie("token", token, {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -37,14 +37,13 @@ const getDeviceInfo = (req) => {
     userAgent: uaString,
     browser: result.browser.name || "Unknown",
     os: result.os.name || "Unknown",
-    device: result.device.type || "Desktop",  // default
+    device: result.device.type || "Desktop", // default
     ipAddress:
       req.headers["x-forwarded-for"]?.split(",")[0] ||
       req.socket?.remoteAddress?.replace(/^::ffff:/, "") ||
       "Unknown",
   };
 };
-
 
 // POST /api/auth/register
 exports.register = async (req, res) => {
@@ -202,28 +201,22 @@ exports.me = async (req, res) => {
 };
 
 // POST /api/auth/logout
-exports.logout =async (req, res) => {
-
-  try{
-
+exports.logout = async (req, res) => {
+  try {
     //invalidate the current session only
-    if(req.user?.sid)
-    {
+    if (req.user?.sid) {
       await Session.findOneAndUpdate(
-        {sessionId:req.user.sid},
-        { isValid:false}
-    );
+        { sessionId: req.user.sid },
+        { isValid: false }
+      );
     }
 
     res.clearCookie("token");
     res.clearCookie("sid");
 
-    res.json({message:"Logged Out"});
-
-  }
-  catch(err){
-    console.error("Logout error",err);
-    res.status(500).json({message:"Server error"});
-
+    res.json({ message: "Logged Out" });
+  } catch (err) {
+    console.error("Logout error", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
