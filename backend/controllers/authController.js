@@ -15,13 +15,15 @@ const sendAuthCookies = (res, token, sid) => {
     httpOnly: true,
     secure: true,
     sameSite: "none",
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie("sid", sid, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: true, // FIXED 🔥
+    sameSite: "none", // FIXED 🔥
+    path: "/", // FIXED 🔥
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
