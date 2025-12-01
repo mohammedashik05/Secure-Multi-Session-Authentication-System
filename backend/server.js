@@ -19,9 +19,13 @@ app.use(
     credentials: true,
   })
 );
-
+app.get("/",()=>{
+  console.log("backend is working ")
+})
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions",sessionRoutes);
+
+
 
 mongoose
   .connect(process.env.MONGO_URI)
