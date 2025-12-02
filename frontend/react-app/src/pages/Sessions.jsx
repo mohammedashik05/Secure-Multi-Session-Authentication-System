@@ -33,8 +33,8 @@ export default function Sessions() {
       });
 
       if (res.data.state === "cur") {
-        console.log("kello")
-        window.location.reload();
+        // console.log("kello")
+        navigate("/login")
         return;
       }
       // Refresh sessions for other devices
@@ -50,7 +50,7 @@ export default function Sessions() {
       await axios.delete(`${API}/api/sessions/all/logout`, {
         withCredentials: true,
       });
-      window.location.reload();
+      navigate("/login")
     } catch (err) {
       console.error(err);
     }

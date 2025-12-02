@@ -1,10 +1,23 @@
+.dashboard {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background: #0f172a; /* dark navy */
+  padding: 20px;
+  gap: 5%;
+}
+
+/* CARD */
 .dashboard-container {
   width: 500px;
   margin: 50px auto;
   background: #1e293b;
   padding: 30px;
   border-radius: 18px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
   animation: fadeIn 0.5s ease;
   text-align: center;
 }
@@ -60,36 +73,83 @@
 .btn-secondary:hover {
   background: #dc2626;
 }
+
 .dashboard-buttons {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-/* MEDIA QUERIES */
+/* ANIMATION BOX */
+.dashboard-animation {
+  width: 600px;
+  height: 600px;
+  padding: 5px;              /* FIX: removed "" */
+  display: flex;              /* FIX: removed "" */
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --------------------- MOBILE --------------------- */
 @media (max-width: 480px) {
+  .dashboard {
+    flex-direction: column;   /* FIX: required for mobile stacking */
+  }
+
   .dashboard-container {
     width: 80%;
     padding: 20px;
     font-size: small;
+    margin: 20px 0;
   }
+
+  .dashboard-animation {
+    width: 200px;
+    height: 200px;
+    padding: 0;
+    flex-direction: column;
+  }
+
   .dashboard-title {
-    font-size: medium; 
+    font-size: medium;
   }
-  .dashboard-buttons button{
+
+  .dashboard-buttons button {
     font-size: small;
   }
 }
 
+/* --------------------- TABLET --------------------- */
 @media (max-width: 768px) {
   .dashboard-container {
     width: 80%;
-    
+  }
+  .dashboard{
+    margin-top: 20%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dashboard-animation {
+    width: 400px;
+    height: 400px;
   }
 }
 
+/* --------------------- DESKTOP --------------------- */
 @media (min-width: 769px) {
   .dashboard-container {
     width: 500px;
+  }
+}
+
+
+@media (max-width:350px)
+{
+  .dashboard-animation{
+    width: 300px;
+    height: 300px;
   }
 }

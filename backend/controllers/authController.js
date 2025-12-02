@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
 const Session = require("../models/Session");
 const generateToken = require("../utils/generateToken");
+const { handleLoginSecurity } = require("../utils/loginSecurity"); // 🔥 Level 5
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -21,15 +22,14 @@ const sendAuthCookies = (res, token, sid) => {
 
   res.cookie("sid", sid, {
     httpOnly: true,
-    secure: true, // FIXED 🔥
-    sameSite: "none", // FIXED 🔥
-    path: "/", // FIXED 🔥
+    secure: true,
+    sameSite: "none",
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
-//helper to extraect device details
-
+// helper to extract device details
 const getDeviceInfo = (req) => {
   const uaString = req.headers["user-agent"] || "";
   const parser = new UAParser(uaString);
@@ -39,7 +39,7 @@ const getDeviceInfo = (req) => {
     userAgent: uaString,
     browser: result.browser.name || "Unknown",
     os: result.os.name || "Unknown",
-    device: result.device.type || "Desktop", // default
+    device: result.device.type || "Desktop",
     ipAddress:
       req.headers["x-forwarded-for"]?.split(",")[0] ||
       req.socket?.remoteAddress?.replace(/^::ffff:/, "") ||
@@ -81,6 +81,9 @@ exports.register = async (req, res) => {
     const token = generateToken(user, sid);
     sendAuthCookies(res, token, sid);
 
+    // Level 5: log first login (won't be suspicious because no last log yet)
+    const security = await handleLoginSecurity(user, deviceInfo, req);
+
     res.status(201).json({
       message: "User Registered",
       user: {
@@ -89,6 +92,7 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
       },
+      security, // optional, available if you want to use it on frontend
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -107,7 +111,6 @@ exports.login = async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ message: "Invalid credentials" });
 
-    // 🔥 Create new session for this login
     const sid = uuidv4();
     const deviceInfo = getDeviceInfo(req);
 
@@ -121,6 +124,9 @@ exports.login = async (req, res) => {
     const token = generateToken(user, sid);
     sendAuthCookies(res, token, sid);
 
+    // 🔥 Level 5 – log & check if suspicious, send email if needed
+    const security = await handleLoginSecurity(user, deviceInfo, req);
+
     res.json({
       message: "Logged in",
       user: {
@@ -129,6 +135,7 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
       },
+      security, // { isSuspicious, reason, location }
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -163,7 +170,6 @@ exports.googleLogin = async (req, res) => {
       });
     }
 
-    // 🔥 Create session
     const sid = uuidv4();
     const deviceInfo = getDeviceInfo(req);
 
@@ -177,6 +183,9 @@ exports.googleLogin = async (req, res) => {
     const token = generateToken(user, sid);
     sendAuthCookies(res, token, sid);
 
+    // 🔥 Level 5 – suspicious login check + email
+    const security = await handleLoginSecurity(user, deviceInfo, req);
+
     res.json({
       message: "Google Login Success",
       user: {
@@ -185,6 +194,7 @@ exports.googleLogin = async (req, res) => {
         email: user.email,
         role: user.role,
       },
+      security,
     });
   } catch (err) {
     console.error("Google login error:", err);
@@ -205,7 +215,6 @@ exports.me = async (req, res) => {
 // POST /api/auth/logout
 exports.logout = async (req, res) => {
   try {
-    //invalidate the current session only
     if (req.user?.sid) {
       await Session.findOneAndUpdate(
         { sessionId: req.user.sid },
