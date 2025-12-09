@@ -16,8 +16,8 @@ A production-grade authentication system inspired by **Google-style multi-sessio
 ## 🔗 Live Demo  
 *(Add your deployment links here)*
 
-Frontend (Netlify): https://your-netlify-url  
-Backend (Render): https://your-render-url  
+Frontend (Netlify): https://cybrex.netlify.app   
+Backend (Render): https://secure-multi-session-authentication.onrender.com  
 
 ---
 
