@@ -5,26 +5,19 @@ const UAParser = require("ua-parser-js");
 const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
 const Session = require("../models/Session");
-const generateToken = require("../utils/generateToken");
+const generateToken = require("../utils/generateTokens");
 const { handleLoginSecurity } = require("../utils/loginSecurity"); // 🔥 Level 5
+const generateTokens = require("../utils/generateTokens");
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // helper to set cookie
-const sendAuthCookies = (res, token, sid) => {
-  res.cookie("token", token, {
+const sendRefreshCookie = (res, refreshToken) => {
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    path: "/",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie("sid", sid, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
+    path: "/api/auth",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -78,14 +71,15 @@ exports.register = async (req, res) => {
       isValid: true,
     });
 
-    const token = generateToken(user, sid);
-    sendAuthCookies(res, token, sid);
+   const {accessToken,refreshToken} = generateTokens(user,sid);
+   sendRefreshCookie(res,refreshToken);
 
     // Level 5: log first login (won't be suspicious because no last log yet)
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.status(201).json({
       message: "User Registered",
+      accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -104,31 +98,32 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
+    
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
+    
     const sid = uuidv4();
     const deviceInfo = getDeviceInfo(req);
-
+    
     await Session.create({
       sessionId: sid,
       userId: user._id,
       ...deviceInfo,
       isValid: true,
     });
-
-    const token = generateToken(user, sid);
-    sendAuthCookies(res, token, sid);
+    
+    const { accessToken, refreshToken } = generateTokens(user, sid);
+    sendRefreshCookie(res,refreshToken);
 
     // 🔥 Level 5 – log & check if suspicious, send email if needed
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.json({
       message: "Logged in",
+      accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -180,14 +175,15 @@ exports.googleLogin = async (req, res) => {
       isValid: true,
     });
 
-    const token = generateToken(user, sid);
-    sendAuthCookies(res, token, sid);
+    const {accessToken,refreshToken} =generateTokens(user,sid);
+   sendRefreshCookie(res,refreshToken);
 
     // 🔥 Level 5 – suspicious login check + email
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.json({
       message: "Google Login Success",
+      accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -222,12 +218,47 @@ exports.logout = async (req, res) => {
       );
     }
 
-    res.clearCookie("token");
-    res.clearCookie("sid");
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/api/auth",
+    });
 
     res.json({ message: "Logged Out" });
   } catch (err) {
     console.error("Logout error", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.refreshAccessToken = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+
+    if (!token) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
+
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, async (err, decoded) => {
+      if (err) return res.status(403).json({ message: "Invalid refresh token" });
+
+      const user = await User.findById(decoded.id);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      // issue new access token
+      const accessToken = jwt.sign(
+        { id: user._id, sid: decoded.sid },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+      );
+
+      res.json({ accessToken });
+    });
+
+  } catch (err) {
+    console.error("Refresh token error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

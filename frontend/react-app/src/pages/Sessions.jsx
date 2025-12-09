@@ -1,23 +1,20 @@
 import React, { useEffect, useState, useContext } from "react";
-import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";     // 🔥 import navigate
+import { useNavigate } from "react-router-dom";
+import api from "../api/axios";        // ✅ use configured axios instance
 import "../style/Sessions.css";
-
-const API = import.meta.env.VITE_API_URL;
 
 export default function Sessions() {
   const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate(); // 🔥 for back button
+  const navigate = useNavigate();
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchSessions = async () => {
     try {
-      const res = await axios.get(`${API}/api/sessions/my`, {
-        withCredentials: true,
-      });
+      // ✅ use api, token auto-attached by interceptor
+      const res = await api.get("/api/sessions/my");
       setSessions(res.data.sessions);
     } catch (err) {
       console.error("Error fetching sessions:", err);
@@ -28,29 +25,29 @@ export default function Sessions() {
 
   const logoutSession = async (sid) => {
     try {
-      const res = await axios.delete(`${API}/api/sessions/${sid}`, {
-        withCredentials: true,
-      });
+      const res = await api.delete(`/api/sessions/${sid}`);
 
-      if (res.data.state === "cur") {
-        // console.log("kello")
-        navigate("/login")
+      // ✅ backend sends { message, status }, not "state"
+      if (res.data.status === "cur") {
+        // This was the current device session → clean up and go to login
+        await logout();
+        navigate("/login");
         return;
       }
-      // Refresh sessions for other devices
+
+      // Refresh sessions list for other devices
       await fetchSessions();
     } catch (err) {
       console.error(err);
     }
   };
 
-
   const logoutAll = async () => {
     try {
-      await axios.delete(`${API}/api/sessions/all/logout`, {
-        withCredentials: true,
-      });
-      navigate("/login")
+      await api.delete("/api/sessions/all/logout");
+      // Also clear local auth state
+      await logout();
+      navigate("/login");
     } catch (err) {
       console.error(err);
     }
@@ -64,6 +61,7 @@ export default function Sessions() {
 
   return (
     <div className="sessions-container">
+      <div className="cybrex-mini-title">CYBREX</div>
       {/* 🔙 BACK BUTTON */}
       <button className="back-btn" onClick={() => navigate("/")}>
         ⬅ Back
@@ -80,23 +78,32 @@ export default function Sessions() {
       ) : (
         sessions.map((s) => (
           <div key={s.sessionId} className="session-card">
-            <h3>{s.browser} • {s.os}</h3>
+            <h3>
+              {s.browser} • {s.os}
+            </h3>
 
-            <p><b>Device:</b> {s.device}</p>
-            <p><b>IP:</b> {s.ipAddress}</p>
-            <p><b>Created:</b> {new Date(s.createdAt).toLocaleString()}</p>
-            <p><b>Last Active:</b> {new Date(s.lastActive).toLocaleString()}</p>
+            <p>
+              <b>Device:</b> {s.device}
+            </p>
+            <p>
+              <b>IP:</b> {s.ipAddress}
+            </p>
+            <p>
+              <b>Created:</b> {new Date(s.createdAt).toLocaleString()}
+            </p>
+            <p>
+              <b>Last Active:</b> {new Date(s.lastActive).toLocaleString()}
+            </p>
 
-            {s.sessionId === user?.sid ? (
-              <span className="current-device">This Device</span>
-            ) : (
-              <button
-                className="logout-btn"
-                onClick={() => logoutSession(s.sessionId)}
-              >
-                Logout This Device
-              </button>
-            )}
+            {/* We don't actually know current sid on frontend (httpOnly cookie),
+                so we just show a Logout button for all sessions.
+                Backend handles whether it's current or not. */}
+            <button
+              className="logout-btn"
+              onClick={() => logoutSession(s.sessionId)}
+            >
+              Logout This Device
+            </button>
           </div>
         ))
       )}

@@ -1,6 +1,6 @@
 .dashboard {
-  height: 100vh;
-  width: 100%;
+  height: 90vh;
+  /* width: 90%; */
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -84,8 +84,8 @@
 .dashboard-animation {
   width: 600px;
   height: 600px;
-  padding: 5px;              /* FIX: removed "" */
-  display: flex;              /* FIX: removed "" */
+  padding: 5px;            
+  display: flex;          /* FIX: removed "" */
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -94,7 +94,7 @@
 /* --------------------- MOBILE --------------------- */
 @media (max-width: 480px) {
   .dashboard {
-    flex-direction: column;   /* FIX: required for mobile stacking */
+    flex-direction: column;  
   }
 
   .dashboard-container {
@@ -102,6 +102,7 @@
     padding: 20px;
     font-size: small;
     margin: 20px 0;
+    
   }
 
   .dashboard-animation {
@@ -109,6 +110,7 @@
     height: 200px;
     padding: 0;
     flex-direction: column;
+    
   }
 
   .dashboard-title {
@@ -122,6 +124,7 @@
 
 /* --------------------- TABLET --------------------- */
 @media (max-width: 768px) {
+  
   .dashboard-container {
     width: 80%;
   }
@@ -130,11 +133,15 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 0px;
   }
 
   .dashboard-animation {
+    margin-top: 5%;
     width: 400px;
     height: 400px;
+    margin-left: -10%;    
+    gap: 5px;
   }
 }
 
@@ -151,5 +158,38 @@
   .dashboard-animation{
     width: 300px;
     height: 300px;
+  }
+}
+
+.security-banner {
+  background: #f87171; /* red */
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: white;
+  font-weight: bold;
+}
+
+.cybrex-mini-title {
+  color: #5ecbff;
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 6px rgba(94, 203, 255, 0.6);
+  letter-spacing: 2px;
+  font-weight: 700;
+  width: 100%;
+  
+  /* Responsive font sizing */
+  font-size: clamp(16px, 2vw, 28px);
+  
+  /* Smooth scaling */
+  transition: font-size 0.2s ease-in-out;
+}
+
+/* Optional: Add a glow hover effect on large screens */
+@media (min-width: 768px) {
+  .cybrex-mini-title:hover {
+    text-shadow: 0 0 10px rgba(94, 203, 255, 0.8),
+                 0 0 20px rgba(94, 203, 255, 0.4);
   }
 }

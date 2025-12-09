@@ -1,151 +1,145 @@
 // src/pages/Login.jsx
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import "../style/Login.css";
 
 import { GoogleLogin } from "@react-oauth/google";
 import { AuthContext } from "../context/AuthContext";
 import toast from "react-hot-toast";
-
-const API = import.meta.env.VITE_API_URL;
+import api from "../api/axios"; // ✅ use configured axios instance
 
 export default function Login() {
-    const navigate = useNavigate();
-    const { setUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { login, googleLogin } = useContext(AuthContext);
 
-    const [isRegister, setIsRegister] = useState(false);
-    const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [isRegister, setIsRegister] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
-    const change = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const change = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    // ------------------------------
-    // NORMAL REGISTER / LOGIN
-    // ------------------------------
+  // ------------------------------
+  // NORMAL REGISTER / LOGIN
+  // ------------------------------
 
-    const submit = async (e) => {
-        e.preventDefault();
+  const submit = async (e) => {
+    e.preventDefault();
 
-        if (!form.email || !form.password || (isRegister && !form.name)) {
-            toast.error("All fields are required");
-            return;
-        }
+    if (!form.email || !form.password || (isRegister && !form.name)) {
+      toast.error("All fields are required");
+      return;
+    }
 
-        try {
-            const endpoint = isRegister ? "register" : "login";
+    try {
+      if (isRegister) {
+        // ✅ use api instance (baseURL + credentials)
+        await api.post("/api/auth/register", form, { withCredentials: true });
 
-            const res = await axios.post(
-                `${API}/api/auth/${endpoint}`,
-                form,
-                { withCredentials: true }
-            );
+        toast.success("Registration successful! Please login.");
+        setIsRegister(false);
+        setForm({ name: "", email: "", password: "" });
+        return;
+      }
 
-            // set user in context
-            setUser(res.data.user);
+      // ✅ use context login (handles token + user)
+      const result = await login(form.email, form.password);
 
-            if (isRegister) {
-                toast.success("Registration successful! Please login.");
-                // Clear fields
-                setForm({ name: "", email: "", password: "" });
-                // Switch to login mode
-                setIsRegister(false);
-            } else {
-                toast.success("Login successful!");
-                navigate("/dashboard");
-            }
+      if (!result.success) {
+        toast.error(result.message || "Login failed");
+        return; // ❗ stop here on failure
+      }
 
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Something went wrong");
-        }
-    };
+      toast.success("Login successful!");
+      navigate("/"); // ✅ dashboard route is "/"
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    }
+  };
 
-    // ------------------------------
-    // GOOGLE LOGIN SUCCESS
-    // ------------------------------
+  // ------------------------------
+  // GOOGLE LOGIN SUCCESS
+  // ------------------------------
 
-    const googleSuccess = async (googleRes) => {
-        try {
-            const credential = googleRes.credential;
+  const googleSuccess = async (googleRes) => {
+    const credential = googleRes.credential;
 
-            const res = await axios.post(
-                `${API}/api/auth/google`,
-                { credential },
-                { withCredentials: true }
-            );
+    const result = await googleLogin(credential);
 
-            setUser(res.data.user);
-            toast.success("Google Login Successful!");
+    if (result.success) {
+      toast.success("Google Login Successful!");
+      navigate("/"); // ✅ same as normal login
+    } else {
+      toast.error("Google login failed");
+    }
+  };
 
-            navigate("/dashboard");
-        } catch (err) {
-            console.log(err);
-            toast.error("Google login failed");
-        }
-    };
+  return (
+    <div className="login-body">
+      <div className="login-container">
+          <div className="cybrex-mini-title">Cybrex </div>
+        <h2>{isRegister ? "Create Account" : "Login"}</h2>
 
-    return (
-        <div className="login-body">
-            <div className="login-container">
+        <form onSubmit={submit}>
+          {isRegister && (
+            <input
+              name="name"
+              placeholder="Name"
+              value={form.name}
+              onChange={change}
+              required
+            />
+          )}
 
-                <h2>{isRegister ? "Create Account" : "Login"}</h2>
+          <input
+            name="email"
+            placeholder="Email"
+            type="email"
+            value={form.email}
+            onChange={change}
+            required
+          />
 
-                <form onSubmit={submit}>
-                    {isRegister && (
-                        <input
-                            name="name"
-                            placeholder="Name"
-                            value={form.name}
-                            onChange={change}
-                            required
-                        />
-                    )}
+          <input
+            name="password"
+            placeholder="Password"
+            type="password"
+            value={form.password}
+            onChange={change}
+            required
+          />
 
-                    <input
-                        name="email"
-                        placeholder="Email"
-                        type="email"
-                        value={form.email}
-                        onChange={change}
-                        required
-                    />
+          <button type="submit">
+            {isRegister ? "Register" : "Login"}
+          </button>
+        </form>
 
-                    <input
-                        name="password"
-                        placeholder="Password"
-                        type="password"
-                        value={form.password}
-                        onChange={change}
-                        required
-                    />
-
-                    <button type="submit">
-                        {isRegister ? "Register" : "Login"}
-                    </button>
-                </form>
-
-                <div style={{ margin: "10px 0",  textAlign:"center", color:"white"}}>or</div>
-
-                {/* GOOGLE LOGIN BUTTON */}
-                <GoogleLogin
-                    onSuccess={googleSuccess}
-                    onError={() => {
-                        toast.error("Google Login Failed");
-                    }}
-                />
-
-                <p style={{ marginTop: "10px" }}>
-                    {isRegister
-                        ? "Already have an account?"
-                        : "Don't have an account?"}
-
-                    <span
-                        style={{ color: "blue", cursor: "pointer", marginLeft: "5px" }}
-                        onClick={() => setIsRegister(!isRegister)}
-                    >
-                        {isRegister ? "Login" : "Register"}
-                    </span>
-                </p>
-            </div>
+        <div
+          style={{
+            margin: "10px 0",
+            textAlign: "center",
+            color: "white",
+          }}
+        >
+          or
         </div>
-    );
+
+        {/* GOOGLE LOGIN BUTTON */}
+        <GoogleLogin
+          onSuccess={googleSuccess}
+          onError={() => {
+            toast.error("Google Login Failed");
+          }}
+        />
+
+        <p style={{ marginTop: "10px" }}>
+          {isRegister ? "Already have an account?" : "Don't have an account?"}
+          <span
+            style={{ color: "blue", cursor: "pointer", marginLeft: "5px" }}
+            onClick={() => setIsRegister(!isRegister)}
+          >
+            {isRegister ? "Login" : "Register"}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
 }

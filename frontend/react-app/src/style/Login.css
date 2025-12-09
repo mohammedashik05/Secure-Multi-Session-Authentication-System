@@ -110,3 +110,27 @@
     opacity: 1;
   }
 }
+
+.cybrex-mini-title {
+  color: #5ecbff;
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 6px rgba(94, 203, 255, 0.6);
+  letter-spacing: 2px;
+  font-weight: 700;
+  width: 100%;
+  
+  /* Responsive font sizing */
+  font-size: clamp(16px, 2vw, 28px);
+  
+  /* Smooth scaling */
+  transition: font-size 0.2s ease-in-out;
+}
+
+/* Optional: Add a glow hover effect on large screens */
+@media (min-width: 768px) {
+  .cybrex-mini-title:hover {
+    text-shadow: 0 0 10px rgba(94, 203, 255, 0.8),
+                 0 0 20px rgba(94, 203, 255, 0.4);
+  }
+}
