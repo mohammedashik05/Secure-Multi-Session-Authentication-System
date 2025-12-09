@@ -46,7 +46,8 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-container">
-          <div className="cybrex-mini-title">CYBREX</div>
+          <div className="cybrex-mini-title">Cybrex</div>
+          
           <h1 className="dashboard-title">Welcome, {user?.name}</h1>
 
           <div className="dashboard-info">

@@ -121,7 +121,7 @@
   width: 100%;
   
   /* Responsive font sizing */
-  font-size: clamp(16px, 2vw, 28px);
+  font-size: clamp(16px, 5vw, 28px);
   
   /* Smooth scaling */
   transition: font-size 0.2s ease-in-out;
@@ -133,4 +133,17 @@
     text-shadow: 0 0 10px rgba(94, 203, 255, 0.8),
                  0 0 20px rgba(94, 203, 255, 0.4);
   }
+}
+
+.google-center {
+  width: 100%;
+  display: flex;
+  justify-content: center;   /* ⭐ centers horizontally */
+  align-items: center;        /* ⭐ centers vertically */
+  min-height: 50px;           /* prevents layout jump */
+}
+
+.google-center iframe {
+  display: block !important;
+  margin: 0 auto !important;  /* ⭐ Google iframe stays centered */
 }

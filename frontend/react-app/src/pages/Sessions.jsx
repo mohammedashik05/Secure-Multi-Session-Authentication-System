@@ -61,7 +61,7 @@ export default function Sessions() {
 
   return (
     <div className="sessions-container">
-      <div className="cybrex-mini-title">CYBREX</div>
+      <div className="cybrex-mini-title">Cybrex</div>
       {/* 🔙 BACK BUTTON */}
       <button className="back-btn" onClick={() => navigate("/")}>
         ⬅ Back
