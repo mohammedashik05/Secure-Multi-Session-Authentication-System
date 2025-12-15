@@ -1,4 +1,4 @@
-// src/api/axios.js
+
 import axios from "axios";
 import { navigateTo } from "../utils/navigation";
 import { setAccessTokenMemory, getAccessTokenMemory } from "./tokenStore";
@@ -10,9 +10,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// ------------------------------
 // REQUEST INTERCEPTOR
-// ------------------------------
 api.interceptors.request.use(
   (config) => {
     const token = getAccessTokenMemory();
@@ -25,22 +23,32 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ------------------------------
 // RESPONSE INTERCEPTOR
-// ------------------------------
 api.interceptors.response.use(
   (response) => response,
 
   async (error) => {
     const original = error.config;
 
-    if (!error.response) return Promise.reject(error);
+    if (!error.response) {
+      return Promise.reject(error);
+    }
 
-    const msg = error.response.data?.message;
+    const status = error.response.status;
+    const message = error.response.data?.message;
 
+    // SESSION INVALID → FORCE LOGOUT
+    if (status === 401 && message === "SESSION_INVALID") {
+      console.log("🔴 Session invalidated → redirecting to login");
+      setAccessTokenMemory(null);
+      navigateTo("/login");
+      return Promise.reject(error);
+    }
+
+    // ACCESS TOKEN EXPIRED → TRY REFRESH
     if (
-      error.response.status === 401 &&
-      msg === "ACCESS_TOKEN_EXPIRED" &&
+      status === 401 &&
+      message === "ACCESS_TOKEN_EXPIRED" &&
       !original._retry
     ) {
       original._retry = true;
@@ -51,6 +59,7 @@ api.interceptors.response.use(
         });
 
         const newAccess = refresh.data.accessToken;
+
         setAccessTokenMemory(newAccess);
 
         original.headers = original.headers || {};
@@ -59,6 +68,7 @@ api.interceptors.response.use(
         return api(original);
       } catch (refreshError) {
         console.log("🔴 Refresh failed → redirecting to login");
+        setAccessTokenMemory(null);
         navigateTo("/login");
       }
     }

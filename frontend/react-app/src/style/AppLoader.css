@@ -1,0 +1,42 @@
+.app-loader {
+    position: fixed;
+    inset: 0;
+
+    background: radial-gradient(circle at top, #0f172a, #020617);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(16px, 4vw, 40px);
+
+    z-index: 9999;
+}
+
+.loader-text {
+    margin-top: clamp(10px, 2vh, 20px);
+
+    font-size: clamp(12px, 2.5vw, 16px);
+
+    color: #94a3b8;
+    letter-spacing: 1px;
+    text-align: center;
+
+    max-width: 90%;
+}
+
+.app-loader {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

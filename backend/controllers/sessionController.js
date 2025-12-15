@@ -13,7 +13,6 @@ exports.getMySessions = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-// DELETE /api/sessions/:sid
 exports.deleteSession = async (req, res) => {
   try {
     const { sid } = req.params;
@@ -27,23 +26,19 @@ exports.deleteSession = async (req, res) => {
       return res.status(404).json({ message: "Session not found" });
     }
 
-    let state="";
-    // 🌟 If user logs out the CURRENT session → clear cookies
-    if (sid === req.cookies.sid) {
-      res.clearCookie("token");
-      res.clearCookie("sid");
-      state="cur";
-    }
+    //  Check if this is current session
+    const isCurrent = sid === req.user.sid;
 
-    res.json({ message: "Session Removed" , state });
+    res.json({
+      message: "Session removed",
+      current: isCurrent,
+    });
   } catch (err) {
-    console.error("Delete session error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
 
-// DELETE /api/sessions/all
 exports.logoutAllSessions = async (req, res) => {
   try {
     await Session.updateMany(
@@ -51,12 +46,11 @@ exports.logoutAllSessions = async (req, res) => {
       { isValid: false }
     );
 
-    res.clearCookie("token");
-    res.clearCookie("sid");
-    
-    res.json({ message: "Logged out from all devices" });
+    res.json({
+      message: "Logged out from all devices",
+      logout: true,
+    });
   } catch (err) {
-    console.error("Logout all error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

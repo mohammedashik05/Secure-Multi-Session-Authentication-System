@@ -159,7 +159,7 @@
   transition: font-size 0.2s ease-in-out;
 }
 
-/* Optional: Add a glow hover effect on large screens */
+/* Add a glow hover effect on large screens */
 @media (min-width: 768px) {
   .cybrex-mini-title:hover {
     text-shadow: 0 0 10px rgba(94, 203, 255, 0.8),

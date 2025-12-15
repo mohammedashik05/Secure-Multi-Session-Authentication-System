@@ -1,4 +1,4 @@
-/* LOGIN CONTAINER DARK MODE */
+
 
 .login-body{
     height: 90vh;
@@ -138,12 +138,36 @@
 .google-center {
   width: 100%;
   display: flex;
-  justify-content: center;   /* ⭐ centers horizontally */
-  align-items: center;        /* ⭐ centers vertically */
-  min-height: 50px;           /* prevents layout jump */
+  justify-content: center;  
+  align-items: center;       
+  min-height: 50px;          
 }
 
 .google-center iframe {
   display: block !important;
-  margin: 0 auto !important;  /* ⭐ Google iframe stays centered */
+  margin: 0 auto !important;  
+}
+
+
+.login-container button:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.or-text {
+  margin: 10px 0;
+  text-align: center;
+  color: white;
+}
+
+/* Optional subtle pulse */
+.login-container button:disabled {
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
 }

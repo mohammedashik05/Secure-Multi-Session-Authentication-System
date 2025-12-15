@@ -74,7 +74,7 @@ exports.register = async (req, res) => {
    const {accessToken,refreshToken} = generateTokens(user,sid);
    sendRefreshCookie(res,refreshToken);
 
-    // Level 5: log first login (won't be suspicious because no last log yet)
+    // log first login (won't be suspicious because no last log yet)
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.status(201).json({
@@ -86,7 +86,7 @@ exports.register = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      security, // optional, available if you want to use it on frontend
+      security, 
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -118,7 +118,7 @@ exports.login = async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user, sid);
     sendRefreshCookie(res,refreshToken);
 
-    // 🔥 Level 5 – log & check if suspicious, send email if needed
+    // log & check if suspicious, send email if needed
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.json({
@@ -178,7 +178,7 @@ exports.googleLogin = async (req, res) => {
     const {accessToken,refreshToken} =generateTokens(user,sid);
    sendRefreshCookie(res,refreshToken);
 
-    // 🔥 Level 5 – suspicious login check + email
+    //  suspicious login check + email
     const security = await handleLoginSecurity(user, deviceInfo, req);
 
     res.json({

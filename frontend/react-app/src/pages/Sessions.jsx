@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";        // ✅ use configured axios instance
-import "../style/Sessions.css";
+import api from "../api/axios";     
 
 export default function Sessions() {
   const { user, logout } = useContext(AuthContext);
@@ -13,7 +12,7 @@ export default function Sessions() {
 
   const fetchSessions = async () => {
     try {
-      // ✅ use api, token auto-attached by interceptor
+      //  use api, token auto-attached by interceptor
       const res = await api.get("/api/sessions/my");
       setSessions(res.data.sessions);
     } catch (err) {
@@ -23,24 +22,23 @@ export default function Sessions() {
     }
   };
 
-  const logoutSession = async (sid) => {
-    try {
-      const res = await api.delete(`/api/sessions/${sid}`);
+ const logoutSession = async (sid) => {
+  try {
+    const res = await api.delete(`/api/sessions/${sid}`);
 
-      // ✅ backend sends { message, status }, not "state"
-      if (res.data.status === "cur") {
-        // This was the current device session → clean up and go to login
-        await logout();
-        navigate("/login");
-        return;
-      }
-
-      // Refresh sessions list for other devices
-      await fetchSessions();
-    } catch (err) {
-      console.error(err);
+    if (res.data.status === "cur") {
+      await logout();
+      navigate("/login");
+      return;
     }
-  };
+
+    fetchSessions();
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
 
   const logoutAll = async () => {
     try {
@@ -62,7 +60,7 @@ export default function Sessions() {
   return (
     <div className="sessions-container">
       <div className="cybrex-mini-title">Cybrex</div>
-      {/* 🔙 BACK BUTTON */}
+      {/*  BACK BUTTON */}
       <button className="back-btn" onClick={() => navigate("/")}>
         ⬅ Back
       </button>

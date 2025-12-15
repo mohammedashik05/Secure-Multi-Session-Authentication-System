@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   const [securityAlert, setSecurityAlert] = useState(null);
 
-  // 🔥 Check if login was suspicious
+  //  Check if login was suspicious
   useEffect(() => {
     const stored = localStorage.getItem("cybrex_security");
     if (stored) {
@@ -27,13 +27,13 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* 🔥 POPUP ALERT */}
+      {/*  POPUP ALERT */}
       <SecurityAlert
         security={securityAlert}
         onClose={() => setSecurityAlert(null)}
       />
 
-      {/* 🔥 BANNER ALERT */}
+      {/*  BANNER ALERT */}
       {securityAlert && (
         <div className="security-banner">
           <p>⚠ Suspicious login detected earlier: {securityAlert.reason}</p>

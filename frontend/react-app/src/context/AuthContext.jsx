@@ -1,4 +1,4 @@
-// src/context/AuthContext.jsx
+
 import { createContext, useEffect, useState } from "react";
 import api from "../api/axios";
 import { setAccessTokenMemory, getAccessTokenMemory } from "../api/tokenStore";
@@ -10,20 +10,28 @@ export default function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState();
   const [loading, setLoading] = useState(true);
 
-  // Save token in React state + in-memory store
+  
   const saveAccessToken = (token) => {
     setAccessToken(token);
     setAccessTokenMemory(token);
   };
 
-  // ------------------------------
-  // Fetch user on app load
-  // ------------------------------
+  useEffect(() => {
+  const interval = setInterval(async () => {
+    try {
+      await api.get("/api/auth/me");
+    } catch (err) {
+    }
+  }, 5000); 
+
+  return () => clearInterval(interval);
+}, []);
+
+
   const fetchUser = async () => {
     try {
       let token = getAccessTokenMemory();
 
-      // 1️⃣ No access token in memory? Try to refresh using cookie
       if (!token) {
         try {
           const refreshRes = await api.get("/api/auth/refresh", {
@@ -39,14 +47,12 @@ export default function AuthProvider({ children }) {
             return;
           }
         } catch (err) {
-          // No valid refresh token → treat as logged out
           setUser(null);
           setLoading(false);
           return;
         }
       }
 
-      // 2️⃣ We now have an access token → get user
       const res = await api.get("/api/auth/me");
       setUser(res.data.user);
     } catch (err) {
@@ -56,9 +62,7 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  // ------------------------------
   // Normal login
-  // ------------------------------
   const login = async (email, password) => {
     try {
       const res = await api.post(
@@ -83,9 +87,7 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  // ------------------------------
   // Google login
-  // ------------------------------
   const googleLogin = async (credential) => {
     try {
       const res = await api.post(
@@ -110,9 +112,7 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  // ------------------------------
   // Logout (clears cookie + memory)
-  // ------------------------------
   const logout = async () => {
     try {
       await api.post("/api/auth/logout", {}, { withCredentials: true });
@@ -126,7 +126,7 @@ export default function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchUser(); // ✅ only once on mount
+    fetchUser(); 
   }, []);
 
   return (
