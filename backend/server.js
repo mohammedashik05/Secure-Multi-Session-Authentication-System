@@ -11,11 +11,11 @@ const sessionRoutes = require("./routes/sessionRoutes");
 const app = express();
 
 /* 🔥 REQUIRED FOR RENDER / PROXY IPs */
-app.set("trust proxy", true);
 
 app.use(express.json());
 app.use(cookieParser());
 
+app.set("trust proxy", true);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
