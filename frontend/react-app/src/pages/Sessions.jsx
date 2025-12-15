@@ -1,54 +1,63 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";     
+import api from "../api/axios";
 import "../style/Sessions.css";
 
 export default function Sessions() {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ------------------------------
+  // FETCH SESSIONS
+  // ------------------------------
   const fetchSessions = async () => {
     try {
-      //  use api, token auto-attached by interceptor
       const res = await api.get("/api/sessions/my");
-      setSessions(res.data.sessions);
+      setSessions(res.data.sessions || []);
     } catch (err) {
-      console.error("Error fetching sessions:", err);
+      console.error("Fetch sessions error:", err);
     } finally {
       setLoading(false);
     }
   };
 
- const logoutSession = async (sid) => {
-  try {
-    const res = await api.delete(`/api/sessions/${sid}`);
+  // ------------------------------
+  // LOGOUT SINGLE SESSION
+  // ------------------------------
+  const logoutSession = async (sid) => {
+    try {
+      const res = await api.delete(`/api/sessions/${sid}`);
 
-    if (res.data.status === "cur") {
-      await logout();
-      navigate("/login");
-      return;
+      // 🔴 CURRENT SESSION → FORCE LOGOUT
+      if (res.data.current === true) {
+        await logout();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      // 🟢 OTHER DEVICE → remove immediately from UI
+      setSessions((prev) =>
+        prev.filter((session) => session.sessionId !== sid)
+      );
+    } catch (err) {
+      console.error("Logout session error:", err);
     }
+  };
 
-    fetchSessions();
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-
-
+  // ------------------------------
+  // LOGOUT ALL SESSIONS
+  // ------------------------------
   const logoutAll = async () => {
     try {
       await api.delete("/api/sessions/all/logout");
-      // Also clear local auth state
       await logout();
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
-      console.error(err);
+      console.error("Logout all error:", err);
     }
   };
 
@@ -61,7 +70,7 @@ export default function Sessions() {
   return (
     <div className="sessions-container">
       <div className="cybrex-mini-title">Cybrex</div>
-      {/*  BACK BUTTON */}
+
       <button className="back-btn" onClick={() => navigate("/")}>
         ⬅ Back
       </button>
@@ -78,25 +87,45 @@ export default function Sessions() {
         sessions.map((s) => (
           <div key={s.sessionId} className="session-card">
             <h3>
-              {s.browser} • {s.os}
+              {(s.browser || "Unknown Browser")} •{" "}
+              {(s.os || "Unknown OS")}
             </h3>
 
             <p>
-              <b>Device:</b> {s.device}
-            </p>
-            <p>
-              <b>IP:</b> {s.ipAddress}
-            </p>
-            <p>
-              <b>Created:</b> {new Date(s.createdAt).toLocaleString()}
-            </p>
-            <p>
-              <b>Last Active:</b> {new Date(s.lastActive).toLocaleString()}
+              <b>Device:</b>{" "}
+              {s.device && s.device !== "Unknown"
+                ? s.device
+                : "Local Device"}
             </p>
 
-            {/* We don't actually know current sid on frontend (httpOnly cookie),
-                so we just show a Logout button for all sessions.
-                Backend handles whether it's current or not. */}
+            <p>
+              <b>IP:</b>{" "}
+              {s.ipAddress &&
+              s.ipAddress !== "::1" &&
+              s.ipAddress !== "127.0.0.1"
+                ? s.ipAddress
+                : "Localhost"}
+            </p>
+
+            <p>
+              <b>Location:</b>{" "}
+              {s.location?.country
+                ? `${s.location.city || ""}${
+                    s.location.region ? ", " + s.location.region : ""
+                  }, ${s.location.country}`
+                : "Local Machine"}
+            </p>
+
+            <p>
+              <b>Created:</b>{" "}
+              {new Date(s.createdAt).toLocaleString()}
+            </p>
+
+            <p>
+              <b>Last Active:</b>{" "}
+              {new Date(s.lastActive).toLocaleString()}
+            </p>
+
             <button
               className="logout-btn"
               onClick={() => logoutSession(s.sessionId)}

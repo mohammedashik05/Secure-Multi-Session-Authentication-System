@@ -23,20 +23,23 @@ const sendRefreshCookie = (res, refreshToken) => {
 };
 
 // helper to extract device details
-const getDeviceInfo = (req) => {
+const { getClientIp, getLocationFromIp } = require("../utils/location");
+
+const getDeviceInfo = async (req) => {
   const uaString = req.headers["user-agent"] || "";
   const parser = new UAParser(uaString);
   const result = parser.getResult();
+
+  const ip = getClientIp(req);
+  const location = await getLocationFromIp(ip);
 
   return {
     userAgent: uaString,
     browser: result.browser.name || "Unknown",
     os: result.os.name || "Unknown",
     device: result.device.type || "Desktop",
-    ipAddress:
-      req.headers["x-forwarded-for"]?.split(",")[0] ||
-      req.socket?.remoteAddress?.replace(/^::ffff:/, "") ||
-      "Unknown",
+    ipAddress: ip,
+    location, // ✅ THIS WAS MISSING
   };
 };
 
@@ -62,7 +65,8 @@ exports.register = async (req, res) => {
     });
 
     const sid = uuidv4();
-    const deviceInfo = getDeviceInfo(req);
+    const deviceInfo = await getDeviceInfo(req);
+
 
     await Session.create({
       sessionId: sid,
