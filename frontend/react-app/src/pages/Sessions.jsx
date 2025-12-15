@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";     
+import "../style/Sessions.css";
 
 export default function Sessions() {
   const { user, logout } = useContext(AuthContext);
