@@ -6,9 +6,12 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const authRoutes = require("./routes/authRoutes");
-const sessionRoutes =require("./routes/sessionRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
 
 const app = express();
+
+/* 🔥 REQUIRED FOR RENDER / PROXY IPs */
+app.set("trust proxy", true);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -19,16 +22,13 @@ app.use(
     credentials: true,
   })
 );
+
 app.get("/", (req, res) => {
   res.send("Backend is working 🚀");
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/sessions",sessionRoutes);
-
-
-
-
+app.use("/api/sessions", sessionRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -36,7 +36,7 @@ mongoose
     console.log("MongoDB connected");
 
     app.listen(process.env.PORT, () => {
-      console.log(`Server running on http://localhost:${process.env.PORT}`);
+      console.log(`Server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {
