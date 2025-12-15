@@ -14,6 +14,8 @@ export default function AuthProvider({ children }) {
     setAccessTokenMemory(token);
   };
 
+  
+
   const fetchUser = async () => {
     try {
       let token = getAccessTokenMemory();
@@ -72,6 +74,22 @@ export default function AuthProvider({ children }) {
   useEffect(() => {
     fetchUser(); // ✅ only once
   }, []);
+
+  useEffect(() => {
+  if (!getAccessTokenMemory()) return;
+
+  const interval = setInterval(async () => {
+    try {
+      await api.get("/api/auth/me");
+    } catch (err) {
+      // stop interval if session invalid
+      clearInterval(interval);
+    }
+  }, 15000); // 15s is enough
+
+  return () => clearInterval(interval);
+}, []);
+
 
   return (
     <AuthContext.Provider
